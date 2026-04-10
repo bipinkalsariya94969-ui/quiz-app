@@ -6,7 +6,7 @@ window.QuizApp = window.QuizApp || {};
 
 QuizApp.Config = {
   // ⚠️ Replace with your deployed Google Apps Script Web App URL
-  API_URL: '',
+  API_URL: 'https://script.google.com/macros/s/AKfycbyY__kroQD2w8KB3bEYkiVQkBtmFPheGH1bfM3PsUODsujy24Gyv1eVdwN4YvJMFMxTvA/exec',
 
   // App Settings
   APP_NAME: 'MathBattle',
