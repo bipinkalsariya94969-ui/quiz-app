@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="MathBattle Admin Panel — Manage quiz competitions">
+  <meta name="theme-color" content="#1a0533">
+  <title>MathBattle — Admin Panel</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔧</text></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Admin-specific overrides */
+    .admin-page-header {
+      text-align: center;
+      padding: var(--space-xl) 0 var(--space-lg);
+      width: 100%;
+    }
+    .admin-page-header h1 {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--text-primary);
+      margin-bottom: var(--space-xs);
+    }
+    .admin-page-header p {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    .admin-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-md);
+      width: 100%;
+      margin-bottom: var(--space-lg);
+    }
+    .admin-stat-box {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-lg);
+      text-align: center;
+    }
+    .admin-stat-box .val {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent);
+    }
+    .admin-stat-box .lbl {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    .admin-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+      width: 100%;
+      margin: var(--space-lg) 0;
+    }
+    .admin-log {
+      width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-md);
+      font-size: 0.8rem;
+      font-family: monospace;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .admin-log .log-entry {
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      padding: 4px 0;
+    }
+    .admin-log .log-entry.success { color: var(--success-light); }
+    .admin-log .log-entry.error { color: var(--error-light); }
+    .admin-back {
+      text-align: center;
+      margin-top: var(--space-xl);
+    }
+    .admin-back a {
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .admin-back a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading...</div>
+  </div>
+
+  <div id="app">
+
+    <!-- Login Section -->
+    <section class="screen active" id="admin-login-screen">
+      <div class="logo-container">
+        <span class="logo-icon">🔧</span>
+        <div class="logo-text">Admin Panel</div>
+        <div class="logo-tagline">MathBattle Competition Control</div>
+      </div>
+
+      <div class="glass-card">
+        <form id="admin-login-form" class="auth-form">
+          <div class="error-message" id="admin-login-error"></div>
+          <div class="input-group">
+            <label for="admin-password">🔑 Admin Password</label>
+            <input type="password" class="input" id="admin-password"
+              placeholder="Enter admin password" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg btn-block">🔓 Access Panel</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section class="screen" id="admin-dashboard-screen">
+      <div class="admin-page-header">
+        <h1>🔧 Admin Dashboard</h1>
+        <p>Control today's competition</p>
+      </div>
+
+      <!-- Status -->
+      <div class="glass-card mb-lg">
+        <div class="status-badge waiting" id="admin-comp-status">
+          <span class="pulse-dot"></span> Checking...
+        </div>
+        <div style="text-align: center; margin-top: var(--space-md);">
+          <div style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 600;" id="admin-status-text">
+            Loading competition status...
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="admin-stat-grid" id="admin-stats-grid">
+        <div class="admin-stat-box">
+          <div class="val" id="stat-participants">0</div>
+          <div class="lbl">Participants</div>
+        </div>
+        <div class="admin-stat-box">
+          <div class="val" id="stat-submitted">0</div>
+          <div class="lbl">Submitted</div>
+        </div>
+        <div class="admin-stat-box">
+          <div class="val" id="stat-questions">-</div>
+          <div class="lbl">Questions</div>
+        </div>
+        <div class="admin-stat-box">
+          <div class="val" id="stat-time">-</div>
+          <div class="lbl">Per Question</div>
+        </div>
+      </div>
+
+      <!-- Create Competition Panel -->
+      <div class="glass-card mb-lg" id="create-panel">
+        <h3 style="font-family: var(--font-display); margin-bottom: var(--space-md);">⚡ New Competition</h3>
+        <div class="admin-field">
+          <label for="new-q-count">Questions</label>
+          <input type="number" id="new-q-count" value="80" min="10" max="100" class="input">
+        </div>
+        <div class="admin-field">
+          <label for="new-time">Time per Question (seconds)</label>
+          <input type="number" id="new-time" value="20" min="10" max="30" class="input">
+        </div>
+        <div class="admin-field">
+          <label for="new-difficulty">Difficulty</label>
+          <select id="new-difficulty" class="input">
+            <option value="easy">Easy (Class 1-3)</option>
+            <option value="medium">Medium (Class 4-5)</option>
+            <option value="hard">Hard (Class 6-8)</option>
+            <option value="mixed" selected>Mixed (All Levels)</option>
+          </select>
+        </div>
+        <button class="btn btn-success btn-lg btn-block" id="btn-start-comp">⚡ Start Competition</button>
+      </div>
+
+      <!-- Actions -->
+      <div class="admin-actions">
+        <button class="btn btn-accent btn-block" id="btn-view-leaderboard">🏆 View Leaderboard</button>
+        <button class="btn btn-ghost btn-block" id="btn-reset" style="border-color: var(--error); color: var(--error-light);">🗑️ Reset Today's Data</button>
+        <button class="btn btn-ghost btn-block" id="btn-refresh">🔄 Refresh Status</button>
+      </div>
+
+      <!-- Activity Log -->
+      <div class="admin-log" id="admin-log">
+        <div class="log-entry">Admin panel loaded...</div>
+      </div>
+
+      <div class="admin-back">
+        <a href="index.html">← Back to Main App</a>
+      </div>
+    </section>
+
+    <!-- Leaderboard Section -->
+    <section class="screen" id="admin-leaderboard-screen">
+      <div class="leaderboard-header">
+        <div class="leaderboard-title">🏆 Leaderboard</div>
+        <div class="subtitle">Competition results</div>
+      </div>
+      <div id="admin-lb-content" class="w-full"></div>
+      <div class="mt-lg w-full">
+        <button class="btn btn-ghost btn-block" id="btn-back-from-lb">← Back to Admin</button>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/sounds.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/leaderboard.js"></script>
+  <script>
+    /* ============================================
+       Admin Panel Controller
+       ============================================ */
+    const AdminPanel = {
+      isAuthenticated: false,
+      competition: null,
+      pollTimer: null,
+
+      init() {
+        this.setupListeners();
+        // Check saved session
+        if (sessionStorage.getItem('mb_admin_auth') === '1') {
+          this.authenticate();
+        }
+      },
+
+      setupListeners() {
+        document.getElementById('admin-login-form')?.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const pw = document.getElementById('admin-password')?.value;
+          if (pw === QuizApp.Config.ADMIN_PASSWORD) {
+            sessionStorage.setItem('mb_admin_auth', '1');
+            this.authenticate();
+          } else {
+            const err = document.getElementById('admin-login-error');
+            if (err) { err.textContent = 'Wrong password'; err.classList.add('visible'); }
+          }
+        });
+
+        document.getElementById('btn-start-comp')?.addEventListener('click', () => this.startCompetition());
+        document.getElementById('btn-reset')?.addEventListener('click', () => this.resetData());
+        document.getElementById('btn-refresh')?.addEventListener('click', () => this.refreshStatus());
+        document.getElementById('btn-view-leaderboard')?.addEventListener('click', () => this.viewLeaderboard());
+        document.getElementById('btn-back-from-lb')?.addEventListener('click', () => this.showScreen('admin-dashboard-screen'));
+      },
+
+      authenticate() {
+        this.isAuthenticated = true;
+        this.showScreen('admin-dashboard-screen');
+        this.refreshStatus();
+        this.startPolling();
+      },
+
+      showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id)?.classList.add('active');
+      },
+
+      showLoading(text) {
+        const o = document.getElementById('loading-overlay');
+        const t = document.querySelector('.loading-text');
+        if (o) o.classList.add('visible');
+        if (t) t.textContent = text || 'Loading...';
+      },
+
+      hideLoading() {
+        document.getElementById('loading-overlay')?.classList.remove('visible');
+      },
+
+      log(msg, type = '') {
+        const logEl = document.getElementById('admin-log');
+        if (!logEl) return;
+        const div = document.createElement('div');
+        div.className = `log-entry ${type}`;
+        const ts = new Date().toLocaleTimeString();
+        div.textContent = `[${ts}] ${msg}`;
+        logEl.prepend(div);
+        // Keep only last 50 entries
+        while (logEl.children.length > 50) logEl.removeChild(logEl.lastChild);
+      },
+
+      async refreshStatus() {
+        try {
+          const result = await QuizApp.API.getCompetitionStatus();
+          if (!result.success) return;
+
+          this.competition = result.competition;
+          const comp = result.competition;
+          const badge = document.getElementById('admin-comp-status');
+          const text = document.getElementById('admin-status-text');
+
+          if (!comp) {
+            badge.className = 'status-badge waiting';
+            badge.innerHTML = '<span class="pulse-dot"></span> No Competition';
+            text.textContent = 'No competition created for today';
+            this.updateStats(0, 0, '-', '-');
+            return;
+          }
+
+          // Update badge
+          const statuses = {
+            waiting: { cls: 'waiting', label: 'Waiting', info: 'Waiting for participants' },
+            countdown: { cls: 'waiting', label: 'Countdown', info: 'Countdown in progress' },
+            active: { cls: 'active', label: 'LIVE', info: 'Competition is LIVE' },
+            completed: { cls: 'completed', label: 'Completed', info: 'Competition ended' },
+          };
+          const s = statuses[comp.status] || statuses.waiting;
+          badge.className = `status-badge ${s.cls}`;
+          badge.innerHTML = `<span class="pulse-dot"></span> ${s.label}`;
+          text.textContent = s.info;
+
+          // Update stats
+          const submitted = comp.submittedCount || 0;
+          this.updateStats(
+            comp.participantCount || 0,
+            submitted,
+            comp.questionCount || '-',
+            comp.timePerQuestion ? comp.timePerQuestion + 's' : '-'
+          );
+
+        } catch (e) {
+          this.log('Failed to refresh: ' + e.message, 'error');
+        }
+      },
+
+      updateStats(participants, submitted, questions, time) {
+        const update = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = val;
+        };
+        update('stat-participants', participants);
+        update('stat-submitted', submitted);
+        update('stat-questions', questions);
+        update('stat-time', time);
+      },
+
+      async startCompetition() {
+        const qCount = parseInt(document.getElementById('new-q-count')?.value) || 80;
+        const time = parseInt(document.getElementById('new-time')?.value) || 20;
+        const diff = document.getElementById('new-difficulty')?.value || 'mixed';
+
+        this.showLoading('Creating competition...');
+        try {
+          const result = await QuizApp.API.startCompetition({
+            questionCount: qCount, timePerQuestion: time, difficulty: diff,
+          });
+          this.hideLoading();
+          if (result.success) {
+            this.log(`Competition started: ${qCount} questions, ${time}s/q, ${diff}`, 'success');
+            this.refreshStatus();
+          } else {
+            this.log('Start failed: ' + (result.error || 'Unknown'), 'error');
+          }
+        } catch (e) {
+          this.hideLoading();
+          this.log('Start error: ' + e.message, 'error');
+        }
+      },
+
+      async resetData() {
+        if (!confirm('⚠️ This will DELETE today\'s competition and ALL results. Continue?')) return;
+
+        this.showLoading('Resetting...');
+        try {
+          await QuizApp.API.resetCompetition();
+          this.hideLoading();
+          this.log('Competition data reset successfully', 'success');
+          this.refreshStatus();
+        } catch (e) {
+          this.hideLoading();
+          this.log('Reset failed: ' + e.message, 'error');
+        }
+      },
+
+      async viewLeaderboard() {
+        this.showScreen('admin-leaderboard-screen');
+        this.showLoading('Loading leaderboard...');
+        await QuizApp.Leaderboard.load(this.competition?.id);
+        this.hideLoading();
+        QuizApp.Leaderboard.render('admin-lb-content');
+      },
+
+      startPolling() {
+        if (this.pollTimer) clearInterval(this.pollTimer);
+        this.pollTimer = setInterval(() => this.refreshStatus(), 5000);
+      },
+    };
+
+    document.addEventListener('DOMContentLoaded', () => AdminPanel.init());
+  </script>
+</body>
+</html>
