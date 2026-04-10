@@ -24,7 +24,7 @@ QuizApp.Config = {
   PARTICIPANT_POLL: 3000,          // ms — participant count live updates
 
   // Demo Mode
-  DEMO_MODE: flase,
+  DEMO_MODE: false,
 
   // Competition Schedule
   DEFAULT_COMPETITION_TIME: '19:00',  // 7 PM
