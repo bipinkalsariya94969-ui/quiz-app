@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="MathBattle PRO — The Ultimate Live Quiz Competition for students.">
+  <meta name="theme-color" content="#0a0e1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>MathBattle PRO</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+  <button class="sound-toggle" id="sound-toggle" aria-label="Toggle Sound">🔊</button>
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading...</div>
+  </div>
+
+  <!-- 1. SPLASH SCREEN -->
+  <div id="splash-screen">
+    <div class="splash-logo">⚡</div>
+    <div class="splash-title">MathBattle</div>
+    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+  </div>
+
+  <div id="app">
+    
+    <!-- Demo Banner -->
+    <div class="demo-banner hidden" id="demo-banner">
+      ⚡ DEMO MODE — Offline Simulation
+    </div>
+
+    <!-- 2. AUTH SCREENS -->
+    <section class="screen auth-screen" id="login-screen">
+      <div class="logo-container">
+        <span class="logo-icon">⚡</span>
+        <div class="logo-text">MathBattle</div>
+        <div class="logo-tagline">The Ultimate Math Competition!</div>
+      </div>
+      <div class="glass-card">
+        <form class="auth-form" id="login-form">
+          <div class="error-message" id="login-error"></div>
+          <div class="input-group">
+            <label for="login-mobile">📱 Mobile Number</label>
+            <input type="tel" class="input" id="login-mobile" placeholder="10-digit mobile" maxlength="10" pattern="[0-9]*" inputmode="numeric" required>
+          </div>
+          <div class="input-group">
+            <label for="login-mpin">🔒 MPIN</label>
+            <input type="password" class="input" id="login-mpin" placeholder="4-digit MPIN" maxlength="4" pattern="[0-9]*" inputmode="numeric" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg btn-block" id="login-btn">🚀 Login</button>
+        </form>
+        <div class="auth-switch">
+          New here? <a id="show-register">Create Account</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen auth-screen" id="register-screen">
+      <div class="logo-container">
+        <span class="logo-icon">🎓</span>
+        <div class="logo-text">Join Us!</div>
+        <div class="logo-tagline">Create your MathBattle account</div>
+      </div>
+      <div class="glass-card">
+        <form class="auth-form" id="register-form">
+          <div class="error-message" id="register-error"></div>
+          <div class="input-group">
+            <label for="register-name">👤 Your Name</label>
+            <input type="text" class="input" id="register-name" placeholder="Enter name" maxlength="50" required>
+          </div>
+          <div class="input-group">
+            <label for="register-mobile">📱 Mobile Number</label>
+            <input type="tel" class="input" id="register-mobile" placeholder="10-digit mobile" maxlength="10" pattern="[0-9]*" inputmode="numeric" required>
+          </div>
+          <div class="input-group">
+            <label for="register-mpin">🔒 Create MPIN</label>
+            <input type="password" class="input" id="register-mpin" placeholder="4-digit MPIN" maxlength="4" pattern="[0-9]*" inputmode="numeric" required>
+          </div>
+          <button type="submit" class="btn btn-secondary btn-lg btn-block" id="register-btn">🎉 Create Account</button>
+        </form>
+        <div class="auth-switch">
+          Already registered? <a id="show-login">Login</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. MAIN APP SHELL (with Tabs) -->
+    <div class="app-shell" id="main-app-shell">
+      
+      <!-- HOME PANEL -->
+      <div class="tab-panel active" id="home-panel">
+        <div class="home-header">
+          <div class="user-greeting">
+            <span class="greeting-text">Welcome back,</span>
+            <span class="user-name">Student</span>
+          </div>
+          <div class="header-actions">
+            <div class="coin-badge">💰 <span id="header-coins">0</span></div>
+            <button class="icon-btn" id="refresh-btn">🔄</button>
+          </div>
+        </div>
+
+        <!-- Competition Card -->
+        <div class="glass-card competition-card">
+          <div class="status-badge waiting" id="competition-status">
+            <span class="pulse-dot"></span> Loading...
+          </div>
+          <div class="competition-title">Today's Battle</div>
+          <div class="competition-info" id="competition-info">Checking status...</div>
+          
+          <div class="participant-row">
+            <span class="count-number" id="participant-count-num">0</span>
+            <span class="text-muted">joined already</span>
+          </div>
+
+          <button class="btn btn-primary btn-lg btn-block hidden" id="join-btn">🚀 Join Competition</button>
+          <button class="btn btn-accent btn-lg btn-block hidden" id="view-leaderboard-btn">🏆 View Results</button>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+          <div class="mini-stat">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value" id="stat-accuracy">0%</div>
+            <div class="stat-label">Accuracy</div>
+          </div>
+          <div class="mini-stat">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-value" id="stat-speed">0s</div>
+            <div class="stat-label">Avg Speed</div>
+          </div>
+          <div class="mini-stat">
+            <div class="stat-icon">🎮</div>
+            <div class="stat-value" id="stat-played">0</div>
+            <div class="stat-label">Games</div>
+          </div>
+          <div class="mini-stat">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value" id="stat-best">#0</div>
+            <div class="stat-label">Best Rank</div>
+          </div>
+        </div>
+
+        <!-- Streak Banner -->
+        <div class="streak-banner">
+          <div class="streak-fire">🔥</div>
+          <div class="streak-info">
+            <div class="streak-title">Daily Streak</div>
+            <div class="streak-desc">Play every day to earn 2x coins!</div>
+          </div>
+          <div class="streak-count">1</div>
+        </div>
+
+        <!-- Admin Section -->
+        <div class="admin-section hidden" id="admin-section">
+          <div class="glass-card admin-card">
+            <h3>🔧 Admin Controls</h3>
+            <div class="admin-field">
+              <label>Questions</label>
+              <input type="number" id="admin-question-count" value="80" min="10" max="100">
+            </div>
+            <div class="admin-field">
+              <label>Time per Q (sec)</label>
+              <input type="number" id="admin-time-per-q" value="20" min="10" max="30">
+            </div>
+            <button class="btn btn-success btn-block" id="admin-start-btn">⚡ Start Battle</button>
+            <button class="btn btn-ghost btn-block mt-sm" id="admin-reset-btn">🗑️ Reset Today</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRACTICE PANEL -->
+      <div class="tab-panel" id="practice-panel">
+        <div class="practice-header">
+          <h2>Training Zone</h2>
+          <p>Improve your speed and earn coins!</p>
+        </div>
+        <div class="practice-modes">
+          <div class="practice-card" onclick="QuizApp.Practice.start('calc')">
+            <span class="card-icon">🧮</span>
+            <div class="card-title">Calculator</div>
+            <div class="card-desc">Solve fast equations</div>
+            <div class="card-coins">+5 💰</div>
+          </div>
+          <div class="practice-card" onclick="QuizApp.Practice.start('sign')">
+            <span class="card-icon">➕</span>
+            <div class="card-title">Guess Sign</div>
+            <div class="card-desc">Find the missing op</div>
+            <div class="card-coins">+5 💰</div>
+          </div>
+          <div class="practice-card" onclick="QuizApp.Practice.start('quick')">
+            <span class="card-icon">⚡</span>
+            <div class="card-title">Quick Calc</div>
+            <div class="card-desc">Extreme speed test</div>
+            <div class="card-coins">+10 💰</div>
+          </div>
+          <div class="practice-card" onclick="QuizApp.Practice.start('tf')">
+            <span class="card-icon">🔍</span>
+            <div class="card-title">True/False</div>
+            <div class="card-desc">Fact check math</div>
+            <div class="card-coins">+3 💰</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEADERBOARD PANEL -->
+      <div class="tab-panel" id="leaderboard-panel">
+        <div class="leaderboard-header">
+          <div class="leaderboard-title">Global Rankings</div>
+        </div>
+        <div id="leaderboard-content" class="w-full"></div>
+      </div>
+
+      <!-- PROFILE PANEL -->
+      <div class="tab-panel" id="profile-panel">
+        <div class="glass-card profile-header-card">
+          <div class="profile-avatar" id="profile-avatar">👤</div>
+          <div class="profile-name" id="profile-display-name">Student Name</div>
+          <div class="profile-id" id="profile-display-id">ID: MB-88291</div>
+          
+          <div class="profile-stats">
+            <div class="profile-stat">
+               <div class="pstat-val" id="profile-total-score">0</div>
+               <div class="pstat-label">Total score</div>
+            </div>
+            <div class="profile-stat">
+               <div class="pstat-val" id="profile-accuracy">0%</div>
+               <div class="pstat-label">Accuracy</div>
+            </div>
+            <div class="profile-stat">
+               <div class="pstat-val" id="profile-rank">#0</div>
+               <div class="pstat-label">Global Rank</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card wallet-card">
+          <div class="wallet-left">
+            <div class="wallet-icon">💰</div>
+            <div>
+              <div class="wallet-label">My Wallet</div>
+              <div class="wallet-amount" id="profile-coins">0.00</div>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-accent">Withdraw</button>
+        </div>
+
+        <div class="glass-card referral-card">
+          <div class="greeting-text">Earn 50 coins for every friend!</div>
+          <div class="referral-code-display">
+            <div class="referral-code" id="my-referral-code">MATH123</div>
+            <button class="icon-btn" onclick="QuizApp.UI.copyToClipboard('MATH123')">📋</button>
+          </div>
+        </div>
+
+        <div class="calendar-section">
+          <h4>Activity Calendar</h4>
+          <div class="calendar-grid" id="activity-calendar"></div>
+        </div>
+
+        <div class="settings-list">
+          <div class="settings-item" id="logout-btn">
+            <div class="si-icon">🚪</div>
+            <div class="si-label">Logout</div>
+            <div class="si-arrow">→</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM TAB BAR -->
+      <nav class="tab-bar">
+        <button class="tab-item active" data-tab="home">
+          <span class="tab-icon">🏠</span>
+          <span>Home</span>
+        </button>
+        <button class="tab-item" data-tab="practice">
+          <span class="tab-icon">🎮</span>
+          <span>Practice</span>
+        </button>
+        <button class="tab-item" data-tab="leaderboard">
+          <span class="tab-icon">🏆</span>
+          <span>Rankings</span>
+        </button>
+        <button class="tab-item" data-tab="profile">
+          <span class="tab-icon">👤</span>
+          <span>Profile</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- 4. OVERLAYS (Full screen over tabs) -->
+    
+    <!-- Countdown -->
+    <section class="overlay-screen" id="countdown-screen">
+      <div class="countdown-container">
+        <div style="font-size: 1.5rem; margin-bottom: 24px; font-weight: 800;">GET READY!</div>
+        <div class="countdown-circle">
+          <svg viewBox="0 0 200 200"><circle class="track" cx="100" cy="100" r="90"/><circle class="progress" cx="100" cy="100" r="90"/></svg>
+          <span class="countdown-number">10</span>
+        </div>
+        <div class="countdown-label">Battle starting...</div>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="overlay-screen" id="quiz-screen">
+      <div class="quiz-header">
+        <span class="quiz-progress-info">1 / 80</span>
+        <div class="quiz-score-display">
+          <span class="score-correct">✅ <span class="quiz-score-value">0</span></span>
+          <span class="score-separator">•</span>
+          <span class="score-wrong">❌ <span class="quiz-wrong-value">0</span></span>
+        </div>
+      </div>
+      <div class="progress-bar-container"><div class="progress-bar-fill" style="width: 0%"></div></div>
+      <div class="quiz-timer">
+        <div class="timer-display">
+          <svg viewBox="0 0 80 80"><circle class="timer-track" cx="40" cy="40" r="35"/><circle class="timer-progress" cx="40" cy="40" r="35"/></svg>
+          <span class="timer-number">20</span>
+        </div>
+      </div>
+      <div class="glass-card question-card">
+        <span class="question-number-badge">Question 1</span>
+        <div class="question-text">...</div>
+      </div>
+      <div class="options-grid"></div>
+    </section>
+
+    <!-- Result -->
+    <section class="overlay-screen" id="result-screen">
+      <div class="result-content">
+        <div class="result-emoji">🏆</div>
+        <div class="result-title">Great Job!</div>
+        <div class="result-subtitle">You did amazing!</div>
+        <div class="glass-card result-score-card">
+          <div class="score-label">SCORE</div>
+          <div class="score-big">0</div>
+        </div>
+        <div class="result-rank hidden">
+          <span class="rank-medal">🏅</span>
+          <span class="rank-text">Rank #1</span>
+        </div>
+        <div class="result-stats">
+          <div class="result-stat"><div class="stat-icon">🎯</div><div class="stat-val" id="result-accuracy">0%</div><div class="stat-lbl">Acc</div></div>
+          <div class="result-stat"><div class="stat-icon">⏱️</div><div class="stat-val" id="result-time">0s</div><div class="stat-lbl">Time</div></div>
+          <div class="result-stat"><div class="stat-icon">💰</div><div class="stat-val" id="result-coins">+0</div><div class="stat-lbl">Coins</div></div>
+        </div>
+        <div class="result-actions">
+          <button class="btn btn-primary btn-block" id="result-leaderboard-btn">🏆 Rankings</button>
+          <button class="btn btn-ghost btn-block" id="result-dashboard-btn">Home</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/sounds.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/practice.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/leaderboard.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

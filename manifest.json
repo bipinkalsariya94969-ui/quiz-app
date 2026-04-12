@@ -1,0 +1,26 @@
+{
+  "name": "MathBattle PRO",
+  "short_name": "MathBattle",
+  "description": "The Ultimate Live Quiz Competition for students.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%237c3aed'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' font-family='Arial' font-weight='bold' font-size='60' fill='white'>⚡</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "games"],
+  "shortcuts": [
+    {
+      "name": "Practice Mode",
+      "url": "/?tab=practice",
+      "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>", "sizes": "96x96" }]
+    }
+  ]
+}
